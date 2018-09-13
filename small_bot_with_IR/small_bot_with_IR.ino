@@ -24,7 +24,7 @@ void setup() {
   pinMode(ENB, OUTPUT);
   analogWrite(ENA, speed);
   analogWrite(ENB, speed);
-  
+
   Serial.begin(9600);
 }
 
@@ -32,6 +32,8 @@ void loop() {
 
   while (Serial.available() == 0 ) {
     //Serial.println(analogRead(sensorPin));
+    digitalWrite(lm1, LOW);      digitalWrite(rm1, LOW);
+    digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
   }
 
 
@@ -59,7 +61,7 @@ void loop() {
     frizz = false;
   }
 
-  
+
   if (calibration && !frizz) {
     sensorState();
 
@@ -104,6 +106,11 @@ void loop() {
 
     }
 
+  }
+
+  if (frizz) {
+    digitalWrite(lm1, LOW);      digitalWrite(rm1, LOW);
+    digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
   }
 }
 
