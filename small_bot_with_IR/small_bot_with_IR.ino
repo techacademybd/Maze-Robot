@@ -9,12 +9,22 @@ boolean calibration, frizz;
 int blackThreshold, whiteThreshold;
 int mainThreshold;
 
+int ENA = 10;
+int ENB = 9;
+int speed = 100;
+
 void setup() {
 
   pinMode(lm1, OUTPUT);
   pinMode(lm2, OUTPUT);
   pinMode(rm1, OUTPUT);
   pinMode(rm2, OUTPUT);
+
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+  
   Serial.begin(9600);
 }
 
@@ -45,7 +55,7 @@ void loop() {
       Serial.println(mainThreshold);
     }
   }
-  if (vals == 'u') {
+  if (val == 'u') {
     frizz = false;
   }
 
