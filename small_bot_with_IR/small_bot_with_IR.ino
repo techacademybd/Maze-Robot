@@ -1,16 +1,15 @@
-
 int lm1 = 2;
 int lm2 = 3;
 int rm1 = 4;
 int rm2 = 5;
 int sensorPin = A0;
 int sensorData;
-boolean calibration, frizz;
+boolean calibration, freeze;
 int blackThreshold, whiteThreshold;
 int mainThreshold;
 
-int ENA = 10;
-int ENB = 9;
+int ENA = 9;
+int ENB = 10;
 int speed = 100;
 
 void setup() {
@@ -20,7 +19,7 @@ void setup() {
   pinMode(rm1, OUTPUT);
   pinMode(rm2, OUTPUT);
 
-  pinMode(ENA, OUTPUT);
+  pinMode(ENA, OUTPUT); 
   pinMode(ENB, OUTPUT);
   analogWrite(ENA, speed);
   analogWrite(ENB, speed);
@@ -32,24 +31,22 @@ void loop() {
 
   while (Serial.available() == 0 ) {
     //Serial.println(analogRead(sensorPin));
-    digitalWrite(lm1, LOW);      digitalWrite(rm1, LOW);
-    digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
   }
 
 
   char val = Serial.read() ;//reads the signal
   //Serial.print(val);
-  if (val == 'b') {
+  if (val == 'v') {
     blackThreshold  = analogRead(sensorPin);
     Serial.println(blackThreshold);
 
   }
-  if (val == 'w') {
+  if (val == 'V') {
     whiteThreshold = analogRead(sensorPin);
     Serial.println(whiteThreshold);
   }
 
-  if (val == 's') {
+  if (val == 'x') {
     if ( blackThreshold > 0  && whiteThreshold > 0) {
       calibration = true;
       int diff = blackThreshold - whiteThreshold;
@@ -57,12 +54,12 @@ void loop() {
       Serial.println(mainThreshold);
     }
   }
-  if (val == 'u') {
-    frizz = false;
+  if (val == 'u' ) {
+    freeze = false;
   }
 
 
-  if (calibration && !frizz) {
+  if (calibration && !freeze) {
     sensorState();
 
     /*********For Forward *********/
@@ -107,18 +104,18 @@ void loop() {
     }
 
   }
-
-  if (frizz) {
+  else {
     digitalWrite(lm1, LOW);      digitalWrite(rm1, LOW);
     digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
   }
 }
 
 
+
 void sensorState() {
   sensorData = analogRead(sensorPin);
   if (sensorData >= mainThreshold) {
-    frizz = true;
+    freeze = true;
   }
 
 }
