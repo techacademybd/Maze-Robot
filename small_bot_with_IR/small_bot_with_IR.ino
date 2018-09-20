@@ -7,12 +7,16 @@ int rm2 = 5;
 int sensorPin = A0;
 int sensorData;
 boolean calibrated = false, freeze = false;
-int blackThreshold, whiteThreshold;
+int blackThreshold = 0, whiteThreshold = 1023;
 int mainThreshold;
 
 int ENA = 9;
 int ENB = 10;
 int speed = 100;
+
+int LED = 13;
+bool LED_state = calibrated;
+unsigned long last_blink = 0;
 
 void setup() {
 
@@ -26,14 +30,23 @@ void setup() {
   analogWrite(ENA, speed);
   analogWrite(ENB, speed);
 
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LED_state);
+
   Serial.begin(9600);
 
+  int a = EEPROM.read(0);
+  if(a > 128 && a < 255){
+    mainThreshold = a * 4;
+    calibrated = true;
+  }
+  Serial.println(a);
   
 }
 
 void loop() {
 
-  while (Serial.available() == 0 ) {
+  while (!Serial.available()) {
     //Serial.println(analogRead(sensorPin));
   }
 
@@ -100,6 +113,13 @@ void loop() {
 
     if (!calibrated)
     {
+      if(millis() - last_blink > 300){
+        LED_state = !LED_state;
+        digitalWrite(LED, LED_state);
+        Serial.println("Calibrating");
+        last_blink = millis();
+      }
+      
       if (sensorData > blackThreshold) {
         blackThreshold = sensorData;
       }
@@ -110,7 +130,10 @@ void loop() {
       
       int diff = blackThreshold - whiteThreshold;
       mainThreshold = blackThreshold - (diff / 5);
+      EEPROM.write(0, mainThreshold/4);
     }
+    else digitalWrite(LED, calibrated);
+    
   }
   else {
     digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
@@ -124,5 +147,4 @@ void sensorState() {
     freeze = true;
   }
   if (!calibrated) freeze = false;
-
 }
