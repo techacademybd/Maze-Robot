@@ -1,10 +1,12 @@
+#include <EEPROM.h>
+
 int lm1 = 2;
 int lm2 = 3;
 int rm1 = 4;
 int rm2 = 5;
 int sensorPin = A0;
 int sensorData;
-boolean calibrated, freeze = false;
+boolean calibrated = false, freeze = false;
 int blackThreshold, whiteThreshold;
 int mainThreshold;
 
@@ -25,6 +27,8 @@ void setup() {
   analogWrite(ENB, speed);
 
   Serial.begin(9600);
+
+  
 }
 
 void loop() {
@@ -35,7 +39,7 @@ void loop() {
 
   sensorState();
 
-  char val = Serial.read() ;//reads the signal
+  char val = Serial.read() ;  //reads the signal
 
   if (val == 'X') {
     calibrated = false;
@@ -103,21 +107,16 @@ void loop() {
       else if (sensorData < whiteThreshold) {
         whiteThreshold = sensorData;
       }
-
+      
       int diff = blackThreshold - whiteThreshold;
       mainThreshold = blackThreshold - (diff / 5);
-
     }
-
-
   }
   else {
     digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
     digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
   }
 }
-
-
 
 void sensorState() {
   sensorData = analogRead(sensorPin);
