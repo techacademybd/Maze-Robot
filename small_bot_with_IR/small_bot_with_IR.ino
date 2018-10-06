@@ -12,7 +12,7 @@ int mainThreshold;
 
 int ENA = 9;
 int ENB = 10;
-int speed = 100;
+int speed = 200;
 
 int LED = 13;
 bool LED_state = calibrated;
@@ -36,12 +36,12 @@ void setup() {
   Serial.begin(9600);
 
   int a = EEPROM.read(0);
-  if(a > 128 && a < 255){
+  if (a > 128 && a < 255) {
     mainThreshold = a * 4;
     calibrated = true;
   }
   Serial.println(a);
-  
+
 }
 
 void loop() {
@@ -59,6 +59,7 @@ void loop() {
   }
 
   if (val == 'x') {
+    EEPROM.write(0, mainThreshold / 4);
     calibrated = true;
   }
 
@@ -69,10 +70,9 @@ void loop() {
 
 
   if (!freeze) {
-
+   Serial.println("r");
     /*********For Forward *********/
     if (val == 'F') {
-      Serial.println("FORWARD");
       digitalWrite(lm1, HIGH);      digitalWrite(rm1, HIGH);
       digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
 
@@ -80,24 +80,18 @@ void loop() {
 
 
     /*********For Backward *********/
-    else if (val == 'B')
-    {
-      Serial.println("BACK");
+    else if (val == 'B') {
       digitalWrite(lm2, HIGH);      digitalWrite(rm2, HIGH);
       digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
 
     }
     /*********Right*********/
-    else if (val == 'R')
-    {
-      Serial.println("RIGHT");
+    else if (val == 'R')   {
       digitalWrite(lm1, HIGH);      digitalWrite(rm2, HIGH);
       digitalWrite(lm2, LOW);       digitalWrite(rm1, LOW);
     }
     /*********Left*********/
-    else if (val == 'L')
-    {
-      Serial.println("LEFT");
+    else if (val == 'L')  {
       digitalWrite(lm2, HIGH);      digitalWrite(rm1, HIGH);
       digitalWrite(lm1, LOW);       digitalWrite(rm2, LOW);
 
@@ -105,7 +99,6 @@ void loop() {
 
     /*********STOP*********/
     else  {
-      Serial.println("stop!!!");
       digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
       digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
 
@@ -113,13 +106,12 @@ void loop() {
 
     if (!calibrated)
     {
-      if(millis() - last_blink > 300){
+      if (millis() - last_blink > 300) {
         LED_state = !LED_state;
         digitalWrite(LED, LED_state);
-        Serial.println("Calibrating");
         last_blink = millis();
       }
-      
+
       if (sensorData > blackThreshold) {
         blackThreshold = sensorData;
       }
@@ -127,18 +119,14 @@ void loop() {
       else if (sensorData < whiteThreshold) {
         whiteThreshold = sensorData;
       }
-      
+
       int diff = blackThreshold - whiteThreshold;
       mainThreshold = blackThreshold - (diff / 5);
-      EEPROM.write(0, mainThreshold/4);
     }
     else digitalWrite(LED, calibrated);
-    
-  }
-  else {
-    digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
-    digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
-  }
+
+  } else Serial.println('f');
+
 }
 
 void sensorState() {
