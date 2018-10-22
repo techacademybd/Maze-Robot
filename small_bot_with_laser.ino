@@ -1,4 +1,3 @@
-#include <EEPROM.h>
 
 int lm1 = 2;
 int lm2 = 3;
@@ -8,13 +7,8 @@ int rm2 = 5;
 int laserPin = 8;
 int LDRpin = A1;
 int laserThreshold = 220;
-int sensorPin = A0;
-int sensorData;
 int laserValue;
-boolean calibrated = false, freeze = false;
-int blackThreshold = 0, whiteThreshold = 1023;
-int mainThreshold;
-int gunCounter;
+boolean calibrated = true , freeze = false;
 
 int ENA = 9;
 int ENB = 10;
@@ -42,20 +36,14 @@ void setup() {
 
   Serial.begin(9600);
 
-  int a = EEPROM.read(0);
-  if (a > 128 && a < 255) {
-    mainThreshold = a * 4;
-    calibrated = true;
-  }
-  Serial.println(a);
-
 }
 
 void loop() {
 
-  while (!Serial.available()) {
+  while (Serial.available() == 0) {
     //Serial.println(analogRead(sensorPin));
     getLaserData();
+    //lowALL();
   }
   getLaserData();
   sensorState();
@@ -67,7 +55,6 @@ void loop() {
   }
 
   if (val == 'x') {
-    EEPROM.write(0, mainThreshold / 4);
     calibrated = true;
   }
 
@@ -111,9 +98,7 @@ void loop() {
 
     /*********STOP*********/
     else  {
-      digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
-      digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
-      digitalWrite(laserPin, LOW);
+      lowALL();
     }
 
     if (!calibrated)  {
@@ -124,39 +109,32 @@ void loop() {
         digitalWrite(LED, LED_state);
         last_blink = millis();
       }
-
-      if (sensorData > blackThreshold) {
-      blackThreshold = sensorData;
     }
-
-    else if (sensorData < whiteThreshold) {
-      whiteThreshold = sensorData;
-    }
-
-    int diff = blackThreshold - whiteThreshold;
-    mainThreshold = blackThreshold - (diff / 5);
-  }
-  else digitalWrite(LED, calibrated);
+    else digitalWrite(LED, calibrated);
 
   } else Serial.println('f');
 
 }
 
 void sensorState() {
-  sensorData = analogRead(sensorPin);
-  if (sensorData >= mainThreshold) {
-    // freeze = true;
-  }
+  //  sensorData = analogRead(sensorPin);
+  //  if (sensorData >= mainThreshold) {
+  // freeze = true;
+  //}
   if (!calibrated) freeze = false;
 }
 
 void getLaserData() {
   laserValue = analogRead(LDRpin);
   if (laserValue  > laserThreshold) {
-    gunCounter ++;
-    if (gunCounter > 3) {
-      Serial.println("l");
-      freeze = true;
-    }
-  } else gunCounter = 0;
+    Serial.println("l");
+    freeze = true;
+  }
+}
+
+void lowALL() {
+  digitalWrite(lm1, LOW);       digitalWrite(rm1, LOW);
+  digitalWrite(lm2, LOW);       digitalWrite(rm2, LOW);
+  digitalWrite(laserPin, LOW);
+
 }
